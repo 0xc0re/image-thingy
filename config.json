@@ -1,4 +1,4 @@
 {
     "upload_folder": "uploads",
-    "max_file_size": 2097152
+    "max_file_size": 10485760
 }
