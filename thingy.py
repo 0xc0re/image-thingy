@@ -10,7 +10,7 @@ from werkzeug.exceptions import BadRequest
 
 # Configuration from environment variables
 UPLOAD_FOLDER = tempfile.mkdtemp()
-MAX_FILE_SIZE = int(os.getenv('MAX_FILE_SIZE', '2097152'))  # Default to 2MB
+MAX_FILE_SIZE = int(os.getenv('MAX_FILE_SIZE', '2')) * 1024 * 1024  # Default to 2MB
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
