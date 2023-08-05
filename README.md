@@ -6,8 +6,9 @@ This project is a Flask-based web application that allows users to upload an ima
 
 ## Installation
 1. Clone the repository.
-2. Build the Docker containers using `docker-compose build`.
-3. Start the containers using `docker-compose up`.
+2. Create a .env file
+3. Build the Docker containers using `docker-compose build`.
+4. Start the containers using `docker-compose up`.
 
 ## Usage
 Access the application at `http://localhost:8000`.
