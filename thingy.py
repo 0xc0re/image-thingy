@@ -1,23 +1,16 @@
-import json
-from flask import Flask, request, send_from_directory, Response, after_this_request
-from PIL import Image
+
 import os
 import secrets
+from flask import Flask, request, send_from_directory, Response
+from PIL import Image
 import tempfile
-import shutil
 import threading
 import time
+from werkzeug.exceptions import BadRequest
 
-# Read configuration from JSON file
-with open('config.json') as f:
-    config = json.load(f)
-
-UPLOAD_FOLDER = config['upload_folder']
-MAX_FILE_SIZE = config['max_file_size']
-
-# Ensure the upload folder exists
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
+# Configuration from environment variables
+UPLOAD_FOLDER = tempfile.mkdtemp()
+MAX_FILE_SIZE = int(os.getenv('MAX_FILE_SIZE', '2097152'))  # Default to 2MB
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -38,16 +31,10 @@ def duplicate_image(image_path, output_path):
     # Create a new image with twice the width and height of the original image
     new_image = Image.new('RGB', (original_width * 2, original_height * 2))
 
-    # Place the original image in the top-left corner
+    # Place the original image in the four corners
     new_image.paste(original_image, (0, 0))
-
-    # Place the original image in the top-right corner
     new_image.paste(original_image, (original_width, 0))
-
-    # Place the original image in the bottom-left corner
     new_image.paste(original_image, (0, original_height))
-
-    # Place the original image in the bottom-right corner
     new_image.paste(original_image, (original_width, original_height))
 
     # Save the new image
@@ -57,23 +44,23 @@ def duplicate_image(image_path, output_path):
 @app.route('/upload', methods=['POST'])
 def upload_file():
     if 'file' not in request.files:
-        return 'No file part', 400
+        raise BadRequest('No file part')
     file = request.files['file']
     if file.filename == '':
-        return 'No selected file', 400
+        raise BadRequest('No selected file')
 
     # Check file size
     file.seek(0, os.SEEK_END)
     file_length = file.tell()
     if file_length > MAX_FILE_SIZE:
-        return 'File size must be under 2MB', 400
+        raise BadRequest('File size must be under 2MB')
 
     # Check if file is an image
     file.seek(0)
     try:
         Image.open(file)
     except:
-        return 'Invalid image file', 400
+        raise BadRequest('Invalid image file')
     file.seek(0)
 
     # Generate a secure random filename
@@ -102,4 +89,4 @@ def upload_file():
     return send_from_directory(app.config['UPLOAD_FOLDER'], output_filename, as_attachment=True, download_name='output_image.jpg', mimetype=mimetype)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)
