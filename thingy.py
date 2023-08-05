@@ -15,6 +15,10 @@ MAX_FILE_SIZE = int(os.getenv('MAX_FILE_SIZE', '2097152'))  # Default to 2MB
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+@app.route('/favicon.ico')
+def favicon():
+    return app.send_static_file('favicon.ico')
+
 @app.route('/')
 def home():
     return send_from_directory('static', 'index.html')
